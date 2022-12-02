@@ -23,7 +23,7 @@
 
   <!-- Bulk copy static test data file dependencies. -->
   <ItemGroup>
-    <TestData Include="./2022/TestData/**" />
+    <TestData Include="./TestData/**" />
   </ItemGroup>
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(TestData)" DestinationFolder="$(OutputPath)/TestData/%(RecursiveDir)" SkipUnchangedFiles="true" />
