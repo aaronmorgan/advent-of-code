@@ -65,7 +65,7 @@ namespace AdventOfCode
 
             foreach (var round in File.ReadAllLines($"./TestData/{filename}"))
             {
-                var cheatAnswer = round[..^1];
+                var cheatAnswer = round[^1..];
 
                 if (draws.Contains(round))
                 {
