@@ -39,20 +39,52 @@ namespace AdventOfCode
             {
                 if (string.IsNullOrEmpty(line))
                 {
-
                     elfCalories.Add(currentCalories);
                     currentCalories = 0;
                     continue;
                 }
 
                 currentCalories += int.Parse(line);
-
             }
 
             elfCalories.Add(currentCalories);
             elfCalories.Sort();
 
             Assert.Equal(expectedAnswer, elfCalories.TakeLast(3).Sum());
+        }
+
+        [Theory]
+        [InlineData("Day2DevelopmentTesting.txt", 15)]
+        [InlineData("Day2.txt", 13268)]
+        public void Day2_Part1_RockPaperSissors(string filename, int expectedScore)
+        {
+            var draws = new[] { "A X", "B Y", "C Z" };
+            var wins = new[] { "A Y", "B Z", "C X" };
+
+            int score = 0;
+
+            foreach (var round in File.ReadAllLines($"./TestData/{filename}"))
+            {
+                var cheatAnswer = round.Substring(round.Length - 1);
+
+                if (draws.Contains(round))
+                {
+                    score += 3;
+                }
+                else if (wins.Contains(round))
+                {
+                    score += 6;
+                }
+
+                score += cheatAnswer switch
+                {
+                    "X" => 1,
+                    "Y" => 2,
+                    "Z" => 3
+                };
+            }
+
+            Assert.Equal(expectedScore, score);
         }
     }
 }
