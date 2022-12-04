@@ -199,5 +199,90 @@ namespace AdventOfCode
 
             Assert.Equal(expectedPrioritySum, prioritySum);
         }
+
+        [Theory]
+        [InlineData("Day4DevelopmentTesting.txt", 2)]
+        [InlineData("Day4.txt", 487)]
+        public void Day4_Part1_Camp_Cleanup(string filename, int expectedSumMatchingPairs)
+        {
+            int sumMatchingPairs = 0;
+
+            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            {
+                var elfZones = line.Split(',');
+
+                var elf1ZoneIdsAsString = ConvertShortRangeToLong(elfZones[0]);
+                var elf2ZoneIdsAsString = ConvertShortRangeToLong(elfZones[1]);
+
+                if (elf1ZoneIdsAsString.Contains(elf2ZoneIdsAsString)) { sumMatchingPairs++; }
+                else if (elf2ZoneIdsAsString.Contains(elf1ZoneIdsAsString)) { sumMatchingPairs++; }
+            }
+
+            static string ConvertShortRangeToLong(string zoneIds)
+            {
+                var zoneParts = zoneIds.Split('-');
+                var elf1Start = int.Parse(zoneParts[0]);
+                var elf1Finish = int.Parse(zoneParts.Length == 1 ? zoneParts[0] : zoneParts[1]);
+
+                var result = string.Empty;
+
+                for (int i = elf1Start; i <= elf1Finish; i++)
+                {
+                    result += $"-{i}-";
+                }
+
+                return result;
+            }
+
+            Assert.Equal(expectedSumMatchingPairs, sumMatchingPairs);
+        }
+
+        [Theory]
+        [InlineData("Day4DevelopmentTesting.txt", 4)]
+        [InlineData("Day4.txt", 849)]
+        public void Day4_Part2_Camp_Cleanup(string filename, int expectedSumOverlappingPairs)
+        {
+            int sumMatchingPairs = 0;
+
+            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            {
+                var elfZones = line.Split(',');
+
+                var (elf1FirstZone, elf1LastZone) = ConvertShortRangeToLong(elfZones[0]);
+                var (elf2FirstZone, elf2LastZone) = ConvertShortRangeToLong(elfZones[1]);
+
+                // Collection 1's first element is within collection 2
+                if (elf1FirstZone >= elf2FirstZone && elf1FirstZone <= elf2LastZone)
+                {
+                    sumMatchingPairs++;
+                }
+                // Collection 1's last element is within collection 2
+                else if (elf1LastZone >= elf2FirstZone && elf1LastZone <= elf2LastZone)
+                {
+                    sumMatchingPairs++;
+                }
+                // Collection 2's first element is within collection 1
+                else if (elf2FirstZone >= elf1FirstZone && elf2FirstZone <= elf1LastZone)
+                {
+                    sumMatchingPairs++;
+                }
+                // Collection 2's last element is within collection 1
+                else if (elf2LastZone >= elf1FirstZone && elf2LastZone <= elf1LastZone)
+                {
+                    sumMatchingPairs++;
+                }
+            }
+
+            static (int firstZone, int LastZone) ConvertShortRangeToLong(string zoneIds)
+            {
+                var zoneParts = zoneIds.Split('-');
+                var elf1Start = int.Parse(zoneParts[0]);
+                var elf1Finish = int.Parse(zoneParts.Length == 1 ? zoneParts[0] : zoneParts[1]);
+
+                return (elf1Start, elf1Finish);
+            }
+
+            Assert.Equal(expectedSumOverlappingPairs, sumMatchingPairs);
+        }
     }
 }
