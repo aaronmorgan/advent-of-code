@@ -1,5 +1,3 @@
-using System.Runtime.Serialization.Formatters;
-
 namespace AdventOfCode
 {
     public class Year2022
@@ -292,7 +290,7 @@ namespace AdventOfCode
         [InlineData("Day5DevelopmentTesting.txt", 9001, "MCD")]
         [InlineData("Day5.txt", 9000, "VQZNJMWTR")]
         [InlineData("Day5.txt", 9001, "NLCDCLVMQ")]
-        public void Day5_Part1_Supply_Stacks(string filename, int craneVersion, string expectedCrateLayout)
+        public void Day5_Part1_Part2_Supply_Stacks(string filename, int craneVersion, string expectedCrateLayout)
         {
             var lines = File.ReadAllLines($"./TestData/{filename}");
 
@@ -383,14 +381,65 @@ namespace AdventOfCode
                     fromStack.RemoveRange(fromStack.Count - numberOfMoves, numberOfMoves);
                 }
             }
-                var answer = string.Empty;
+            var answer = string.Empty;
 
-                foreach (var stack in crateStacks)
+            foreach (var stack in crateStacks)
+            {
+                answer += stack[^1].Trim('[', ']', ' ');
+            }
+
+            Assert.Equal(expectedCrateLayout, answer);
+        }
+
+        [Theory]
+        [InlineData("Day6DevelopmentTesting1.txt", 4, 7)]
+        [InlineData("Day6DevelopmentTesting2.txt", 4, 5)]
+        [InlineData("Day6DevelopmentTesting3.txt", 4, 6)]
+        [InlineData("Day6DevelopmentTesting4.txt", 4, 10)]
+        [InlineData("Day6DevelopmentTesting5.txt", 4, 11)]
+        [InlineData("Day6DevelopmentTesting6.txt", 14, 19)]
+        [InlineData("Day6.txt", 4, 1300)]
+        [InlineData("Day6.txt", 14, 3986)]
+        public void Day6_Part1_Part2_Tuning_Trouble(string filename, int headerSize, int expectedHeaderOffset)
+        {
+            var lines = File.ReadAllLines($"./TestData/{filename}");
+            var line = lines[0];
+
+            bool protocolHeaderFound = false;
+            int answer = 0;
+
+            for (int i = headerSize; i < line.Length; i++)
+            {
+                var preceedingChars = line[(i - headerSize)..i];
+
+                var tmpBuffer = string.Empty;
+
+                foreach (var c in preceedingChars)
                 {
-                    answer += stack[^1].Trim('[', ']', ' ');
+                    if (!tmpBuffer.Contains(c))
+                    {
+                        tmpBuffer += c;
+
+                        if (tmpBuffer.Length == headerSize)
+                        {
+                            protocolHeaderFound = true;
+                            answer = i;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
-                Assert.Equal(expectedCrateLayout, answer);
+                if (protocolHeaderFound)
+                {
+                    Assert.Equal(expectedHeaderOffset, answer);
+
+                    break;
+                }
+            }
         }
     }
 }
