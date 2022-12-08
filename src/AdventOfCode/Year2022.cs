@@ -1,3 +1,5 @@
+using System.Runtime.Serialization.Formatters;
+
 namespace AdventOfCode
 {
     public class Year2022
@@ -283,6 +285,112 @@ namespace AdventOfCode
             }
 
             Assert.Equal(expectedSumOverlappingPairs, sumMatchingPairs);
+        }
+
+        [Theory]
+        [InlineData("Day5DevelopmentTesting.txt", 9000, "CMZ")]
+        [InlineData("Day5DevelopmentTesting.txt", 9001, "MCD")]
+        [InlineData("Day5.txt", 9000, "VQZNJMWTR")]
+        [InlineData("Day5.txt", 9001, "NLCDCLVMQ")]
+        public void Day5_Part1_Supply_Stacks(string filename, int craneVersion, string expectedCrateLayout)
+        {
+            var lines = File.ReadAllLines($"./TestData/{filename}");
+
+            int columnsCount = 0;
+            var currentCratePositions = new List<string>();
+
+            List<List<string>> crateStacks = new();
+
+            // Skip forward to determine the total number of crate columns.
+            foreach (var line in lines)
+            {
+                if (line[1] == '1')
+                {
+                    columnsCount = int.Parse(line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[^1]);
+                    break;
+                }
+            }
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith(" ") || line.StartsWith("["))
+                {
+                    if (line.Length == 0) { break; }
+
+                    currentCratePositions.Add(line + " "); // Bit hacky, but generates consistent 4 byte columns, e.g. '[A] '.
+                }
+
+                if (line.StartsWith(" 1"))
+                {
+                    var stackIndices = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                    crateStacks = Enumerable.Range(0, int.Parse(stackIndices[^1])).Select(_ => new List<string>()).ToList();
+                    break;
+                }
+            }
+
+            // Foreach line in the crate stacks find the crate value and if it's not null
+            // add it to the column of crates in the stack position.
+            for (var line = currentCratePositions.Count - 1; line >= 0; line--)
+            {
+                var crate = currentCratePositions[line];
+
+                for (int columnPos = 0; columnPos < columnsCount; columnPos++)
+                {
+                    var crateValue = crate[(columnPos * 4)..((columnPos * 4) + 3)];
+
+                    // Ignore empty spaces.
+                    if (!string.IsNullOrWhiteSpace(crateValue))
+                    {
+                        crateStacks[columnPos].Add(crateValue);
+                    }
+                }
+            }
+
+            // Transform the move instructions into simply array of count|from|to values.
+            foreach (var line in lines)
+            {
+                if (!line.StartsWith("move")) { continue; }
+
+                var lineTmp = line.Replace(' ', ',');
+
+                var moveInstruction = lineTmp
+                    .Replace("move", string.Empty)
+                    .Replace("from", string.Empty)
+                    .Replace("to", string.Empty)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                var numberOfMoves = int.Parse(moveInstruction[0]);
+
+                // Pick up crates indiviually resulting in reverse order when moved.
+                if (craneVersion == 9000)
+                {
+                    for (int i = 0; i < numberOfMoves; i++)
+                    {
+                        var crateStack = crateStacks[int.Parse(moveInstruction[1]) - 1];
+
+                        crateStacks[int.Parse(moveInstruction[2]) - 1].Add(crateStack[^1]);
+                        crateStack.RemoveAt(crateStack.Count - 1);
+                    }
+                }
+
+                // Pick up crates in a block resulting in order being preserved when moved.
+                if (craneVersion == 9001)
+                {
+                    var fromStack = crateStacks[int.Parse(moveInstruction[1]) - 1];
+
+                    crateStacks[int.Parse(moveInstruction[2]) - 1].AddRange(fromStack.ToArray()[^numberOfMoves..]);
+                    fromStack.RemoveRange(fromStack.Count - numberOfMoves, numberOfMoves);
+                }
+            }
+                var answer = string.Empty;
+
+                foreach (var stack in crateStacks)
+                {
+                    answer += stack[^1].Trim('[', ']', ' ');
+                }
+
+                Assert.Equal(expectedCrateLayout, answer);
         }
     }
 }
