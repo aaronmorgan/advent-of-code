@@ -1,7 +1,15 @@
+using Xunit.Abstractions;
+
 namespace AdventOfCode
 {
     public class Year2022
     {
+        private readonly ITestOutputHelper _output;
+        public Year2022(ITestOutputHelper testOutputHelper)
+        {
+            _output = testOutputHelper;
+        }
+
         [Theory]
         [InlineData("Day1DevelopmentTesting.txt", 24000)]
         [InlineData("Day1.txt", 71924)]
@@ -440,6 +448,121 @@ namespace AdventOfCode
                     break;
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("Day7DevelopmentTesting.txt", 100_000, 95_437)]
+        [InlineData("Day7.txt", 100_000, 1_845_346)]
+        public void Day7_Part1_No_Space_Left_On_Device(string filename, int filesizeThreshold, int expectedFilesizeSum)
+        {
+            Day7Directory rootDirectory = new() { Name = "root" };
+            Day7Directory currentDirectory = rootDirectory;
+
+            List<Day7Directory> resultDirectories = new();
+
+            foreach (var line in File.ReadAllLines($"./TestData/{filename}"))
+            {
+                var l = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                switch (l[0])
+                {
+                    case "$":
+                        {
+                            if (l[1] == "cd")
+                            {
+
+                                if (l[2] == "/")
+                                {
+                                    currentDirectory = rootDirectory;
+                                }
+                                else if (l[2] == "..")
+                                {
+                                    currentDirectory = currentDirectory.Parent;
+                                }
+                                else
+                                {
+                                    _output.WriteLine(l[2]);
+                                    currentDirectory = currentDirectory.Children.Find(x => x.Name == l[2]);
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case "dir":
+                        {
+                            var childDirectoryName = l[1];
+
+                            var childDirectory = currentDirectory?.Children.Find(x => x.Name == childDirectoryName);
+
+                            if (childDirectory == null)
+                            {
+                                var newChildDirectory = new Day7Directory
+                                {
+                                    Name = childDirectoryName,
+                                    Parent = currentDirectory
+                                };
+
+                                currentDirectory?.Children.Add(newChildDirectory);
+
+                                resultDirectories.Add(newChildDirectory);
+                            }
+                            break;
+                        }
+                    // Filename
+                    default:
+                        {
+                            string f = l[1];
+                            int filesize = int.Parse(l[0]);
+
+                            if (!currentDirectory.Files.TryGetValue(f, out var _))
+                            {
+                                currentDirectory?.Files.Add(f, filesize);
+                            }
+
+                            break;
+                        }
+                }
+            }
+
+            var answer = 0;
+            var directoryFileSizeSum = 0;
+            foreach (var d in resultDirectories)
+            {
+                CalculateDirectoryStorage(d);
+
+                if (directoryFileSizeSum <= filesizeThreshold)
+                {
+                    answer += directoryFileSizeSum;
+                }
+
+                directoryFileSizeSum = 0;
+            }
+
+            void CalculateDirectoryStorage(Day7Directory directory)
+            {
+
+                foreach (var file in directory.Files)
+                {
+                    directoryFileSizeSum += file.Value;
+                }
+
+                foreach (var dir in directory.Children)
+                {
+                    CalculateDirectoryStorage(dir);
+                }
+            }
+
+            Assert.Equal(expectedFilesizeSum, answer);
+        }
+
+        class Day7Directory
+        {
+            public string Name { get; set; } = default!;
+            public Day7Directory Parent { get; set; } = default!;
+            public List<Day7Directory> Children { get; set; } = new();
+
+            public Dictionary<string, int> Files { get; set; } = new Dictionary<string, int>();
         }
     }
 }
