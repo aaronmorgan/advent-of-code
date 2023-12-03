@@ -2,6 +2,8 @@ namespace AdventOfCode
 {
     public class Year2022
     {
+        private static IEnumerable<string> ReadFile(string filename) => File.ReadLines($"./TestData/2022/{filename}");
+
         [Theory]
         [InlineData("Day1DevelopmentTesting.txt", 24000)]
         [InlineData("Day1.txt", 71924)]
@@ -10,7 +12,7 @@ namespace AdventOfCode
             int maxCaloriesCarried = 0;
             int currentCalories = 0;
 
-            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            foreach (var line in ReadFile(filename))
             {
                 if (!string.IsNullOrEmpty(line))
                 {
@@ -35,7 +37,7 @@ namespace AdventOfCode
             List<int> elfCalories = new();
             int currentCalories = 0;
 
-            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            foreach (var line in ReadFile(filename))
             {
                 if (string.IsNullOrEmpty(line))
                 {
@@ -63,7 +65,7 @@ namespace AdventOfCode
 
             int score = 0;
 
-            foreach (var round in File.ReadAllLines($"./TestData/{filename}"))
+            foreach (var round in ReadFile(filename))
             {
                 var cheatAnswer = round[^1..];
 
@@ -97,7 +99,7 @@ namespace AdventOfCode
 
             int score = 0;
 
-            foreach (var round in File.ReadAllLines($"./TestData/{filename}"))
+            foreach (var round in ReadFile(filename))
             {
                 var opponentChoice = round[..1];
 
@@ -142,7 +144,7 @@ namespace AdventOfCode
         {
             int prioritySum = 0;
 
-            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            foreach (var line in ReadFile(filename))
             {
                 var compartmentA = line[..(line.Length / 2)].ToArray();
                 var compartmentB = line[^(line.Length / 2)..];
@@ -173,9 +175,9 @@ namespace AdventOfCode
         {
             int prioritySum = 0;
 
-            var fileContents = File.ReadAllLines($"./TestData/{filename}");
+            var fileContents = ReadFile(filename).ToList();
 
-            for (int i = 0; i < fileContents.Length - 2; i += 3)
+            for (int i = 0; i < fileContents.Count - 2; i += 3)
             {
                 var line1 = fileContents[i + 0].ToArray();
                 var line2 = fileContents[i + 1];
@@ -207,7 +209,7 @@ namespace AdventOfCode
         {
             int sumMatchingPairs = 0;
 
-            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            foreach (var line in ReadFile(filename))
             {
                 var elfZones = line.Split(',');
 
@@ -244,7 +246,7 @@ namespace AdventOfCode
         {
             int sumMatchingPairs = 0;
 
-            foreach (var line in File.ReadLines($"./TestData/{filename}"))
+            foreach (var line in ReadFile(filename))
             {
                 var elfZones = line.Split(',');
 
@@ -292,7 +294,7 @@ namespace AdventOfCode
         [InlineData("Day5.txt", 9001, "NLCDCLVMQ")]
         public void Day5_Part1_Part2_Supply_Stacks(string filename, int craneVersion, string expectedCrateLayout)
         {
-            var lines = File.ReadAllLines($"./TestData/{filename}");
+            var lines = ReadFile(filename);
 
             int columnsCount = 0;
             var currentCratePositions = new List<string>();
@@ -402,7 +404,7 @@ namespace AdventOfCode
         [InlineData("Day6.txt", 14, 3986)]
         public void Day6_Part1_Part2_Tuning_Trouble(string filename, int headerSize, int expectedHeaderOffset)
         {
-            var lines = File.ReadAllLines($"./TestData/{filename}");
+            var lines = ReadFile(filename).ToList();
             var line = lines[0];
 
             bool protocolHeaderFound = false;
