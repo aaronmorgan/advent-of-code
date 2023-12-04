@@ -438,21 +438,21 @@ public class Year2023
     [InlineData("Day4.txt", 5921508)]
     public void Day4_Part2_Scratchcards(string filename, int expectedAnswer)
     {
-        int result = 0;
-        var games = new ArrayList(ReadFile(filename).ToArray());
-        
-        for (var index = 0; index < games.Count; index++)
+        var games = ReadFile(filename).ToArray();
+        var result = games.Length;
+
+        for (var i = 0; i < games.Length; i++)
         {
-            PlayGameCard(index);
+            PlayGameCard(i);
         }
 
-        Assert.Equal(expectedAnswer, result + games.Count);
-        
+        Assert.Equal(expectedAnswer, result);
+
         return;
 
         void PlayGameCard(int index)
         {
-            var gameCard = games[index] as string;
+            var gameCard = games[index];
 
             var tmpStr = gameCard[(gameCard.IndexOf(':') + 1)..].Split('|');
 
@@ -462,11 +462,11 @@ public class Year2023
             var bonusGames = winningNumbers.Sum(x => gameNumbers.Count(y => y == x));
 
             result += bonusGames;
-            
+
             for (var i = index + 1; i <= index + bonusGames; i++)
             {
                 PlayGameCard(i);
-            } 
+            }
         }
     }
 }
