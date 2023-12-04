@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using Microsoft.VisualBasic;
 using Xunit.Abstractions;
@@ -178,10 +179,9 @@ public class Year2023
         static int DeriveValue(string intput) => int.Parse(intput[..intput.IndexOf(' ')]);
     }
 
-
     [Theory]
     [InlineData("Day3DevelopmentTesting1.txt", 4361)]
-    [InlineData("Day3.txt", 485925)] // 548403 548775 548403 547620 549374 323742 548311 545757 550064
+    [InlineData("Day3.txt", 550064)]
     public void Day3_Part1_GearRatios(string filename, int expectedAnswer)
     {
         int result = 0;
@@ -265,20 +265,208 @@ public class Year2023
                         }
                     }
 
-                    if (isEnginePart)
-                    {
-                        result += int.Parse(numberBeingTested);
-                        output.WriteLine($"Good: {numberBeingTested}, line={i+1}");
-
-                    }
-                    else
-                    {
-                     //   output.WriteLine($"Bad: {numberBeingTested}, line={i+1}");
-                    }
+                    if (!isEnginePart) continue;
+                    
+                    result += int.Parse(numberBeingTested);
                 }
             }
         }
 
         Assert.Equal(expectedAnswer, result);
+    }
+    
+    [Theory]
+    [InlineData("Day3DevelopmentTesting1.txt", 467835)]
+    [InlineData("Day3.txt", 550064)]
+    public void Day3_Part2_GearRatios(string filename, int expectedAnswer)
+    {
+        int result = 0;
+        int lastNumber = 0;
+        int lastSymbol = 0;
+        int currentSymbol = 0;
+
+        string[] lines = ReadFile(filename).Select(x => x += ".").ToArray();
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            List<char> currentNumber = new();
+
+            for (var j = 0; j < lines[i].Length; j++)
+            {
+                if (char.IsDigit(lines[i][j]))
+                {
+                    currentNumber.Add(lines[i][j]);
+                }
+                else
+                {
+                    char partSymbol = '\0';
+                    
+                    if (currentNumber.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    bool isEnginePart = false;
+
+                    var numberBeingTested = new string(currentNumber.ToArray());
+                    currentNumber.Clear();
+
+                    var numberLength = numberBeingTested.Length;
+
+                    var preceedingChar = lines[i][Math.Max(0, j - numberLength - 1)];
+
+                    if (!char.IsDigit(preceedingChar) && preceedingChar != '.')
+                    {
+                        isEnginePart = true;
+                        
+                    }
+
+                    var trailingChar = lines[i][Math.Min(lines[i].Length, j)];
+
+                    if (!char.IsDigit(trailingChar) && trailingChar != '.')
+                    {
+                        isEnginePart = true;
+                    }
+                    
+                  if (preceedingChar == '*' || trailingChar == '*') currentSymbol = '*';
+                    
+                    // Check line below.
+                    if (!isEnginePart && i + 1 < lines.Length)
+                    {
+                        var startIndex = Math.Max(0, j - numberLength - 1);
+                        var lineBelow = lines[i + 1].Substring(startIndex, numberLength + (startIndex == 0 && j == 0 ? 1 : 2));
+
+                        foreach (var c in lineBelow)
+                        {
+                            if (char.IsDigit(c) || c == '.')
+                            {
+                                isEnginePart = false;
+                            }
+                            else
+                            {
+                                isEnginePart = true;
+                               // if (c == '*' ) partSymbol = '*';
+                               currentSymbol = c;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Check preceeding line.
+                    if (!isEnginePart && i - 1 > 0)
+                    {
+                        var startIndex = Math.Max(0, j - numberLength - 1);
+                        var lineBefore = lines[i - 1].Substring(startIndex, numberLength + (startIndex == 0 ? 1 : 2));
+
+                        foreach (var c in lineBefore)
+                        {
+                            if (char.IsDigit(c) || c == '.')
+                            {
+                                isEnginePart = false;
+                            }
+                            else
+                            {
+                                isEnginePart = true;
+                               // if (c == '*' ) partSymbol = '*';
+                               currentSymbol = c;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isEnginePart)
+                    {
+                        if (lastSymbol == currentSymbol && currentSymbol == '*')
+                        {
+                            result += (lastNumber * int.Parse(numberBeingTested)) - lastNumber;
+                        }
+                        else
+                        {
+                            result += int.Parse(numberBeingTested);
+                        }
+
+                    }
+           //         else
+           //         {
+                    //    lastNumber = '\0';
+                    // }
+                        lastNumber = int.Parse(numberBeingTested);
+                        lastSymbol = currentSymbol;
+                }
+            }
+        }
+
+        Assert.Equal(expectedAnswer, result);
+    }
+
+    [Theory]
+    [InlineData("Day4DevelopmentTesting1.txt", 13)] 
+    [InlineData("Day4.txt", 18653)]
+    public void Day4_Part1_Scratchcards(string filename, int expectedAnswer)
+    {
+        int result = 0;
+
+        foreach (var gameCard in ReadFile(filename))
+        {
+            var tmpStr = gameCard[(gameCard.IndexOf(':') + 1)..].Split('|');
+
+            var winningNumbers = tmpStr[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+            var gameNumbers = tmpStr[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+
+            int scoreMultiplier = 1, gameScore = 0;
+                
+            foreach (var x in winningNumbers)
+            {
+                foreach (var y in gameNumbers)
+                {
+                    if (y != x) continue;
+                    
+                    gameScore = scoreMultiplier;
+                    scoreMultiplier += scoreMultiplier;
+                }
+            }
+            
+            result += gameScore;
+        }
+
+        Assert.Equal(expectedAnswer, result);
+    }
+
+    [Theory]
+    [InlineData("Day4DevelopmentTesting2.txt", 30)]
+    [InlineData("Day4.txt", 5921508)]
+    public void Day4_Part2_Scratchcards(string filename, int expectedAnswer)
+    {
+        int result = 0;
+        var games = new ArrayList(ReadFile(filename).ToArray());
+        
+        for (var index = 0; index < games.Count; index++)
+        {
+            PlayGameCard(index);
+        }
+
+        Assert.Equal(expectedAnswer, result + games.Count);
+        
+        return;
+
+        void PlayGameCard(int index)
+        {
+            var gameCard = games[index] as string;
+
+            var tmpStr = gameCard[(gameCard.IndexOf(':') + 1)..].Split('|');
+
+            var winningNumbers = tmpStr[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+            var gameNumbers = tmpStr[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+
+            var bonusGames = winningNumbers.Sum(x => gameNumbers.Count(y => y == x));
+
+            result += bonusGames;
+            
+            for (var i = index + 1; i <= index + bonusGames; i++)
+            {
+                PlayGameCard(i);
+            } 
+        }
     }
 }
