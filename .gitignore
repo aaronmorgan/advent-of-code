@@ -449,3 +449,4 @@ Web.API/Precis.WebAPI/settings.json
 
 TestResults.xml
 *.trx
+.idea
