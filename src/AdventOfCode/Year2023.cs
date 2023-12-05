@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Text;
-using Microsoft.VisualBasic;
 using Xunit.Abstractions;
 
 namespace AdventOfCode;
@@ -11,7 +8,7 @@ public class Year2023
 
     public Year2023(ITestOutputHelper testOutputHelper)
     {
-            output = testOutputHelper;
+        output = testOutputHelper;
     }
     
     private static IEnumerable<string> ReadFile(string filename) => File.ReadAllLines($"./TestData/2023/{filename}");
@@ -85,6 +82,8 @@ public class Year2023
         }
 
         Assert.Equal(expectedAnswer, result);
+
+        return;
 
         void SetDigit(int number)
         {
@@ -175,7 +174,9 @@ public class Year2023
         }
 
         Assert.Equal(expectedAnswer, result);
-        
+
+        return;
+
         static int DeriveValue(string intput) => int.Parse(intput[..intput.IndexOf(' ')]);
     }
 
@@ -185,7 +186,7 @@ public class Year2023
     public void Day3_Part1_GearRatios(string filename, int expectedAnswer)
     {
         int result = 0;
-        string[] lines = ReadFile(filename).Select(x => x += ".").ToArray();
+        string[] lines = ReadFile(filename).Select(x => x + ".").ToArray();
 
         for (var i = 0; i < lines.Length; i++)
         {
@@ -285,7 +286,7 @@ public class Year2023
         int lastSymbol = 0;
         int currentSymbol = 0;
 
-        string[] lines = ReadFile(filename).Select(x => x += ".").ToArray();
+        string[] lines = ReadFile(filename).Select(x => x + ".").ToArray();
 
         for (var i = 0; i < lines.Length; i++)
         {
@@ -453,7 +454,6 @@ public class Year2023
         void PlayGameCard(int index)
         {
             var gameCard = games[index];
-
             var tmpStr = gameCard[(gameCard.IndexOf(':') + 1)..].Split('|');
 
             var winningNumbers = tmpStr[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
