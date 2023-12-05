@@ -50,7 +50,65 @@ public class Day5 : TestBase
 
             foreach (var a in mappingDictionaries[dictionaryIndex].SoureRangeMappings)
             {
-                if (seedId < a.Key || seedId > a.Key + a.Value) continue;
+                if (seedId < a.Key || seedId > a.Key + a.Value -1) continue;
+
+                var nextSeedId = mappingDictionaries[dictionaryIndex].DestinationRangeMappings[a.Key] + (seedId - a.Key);
+
+                return SearchDictionaries(dictionaryIndex + 1, nextSeedId);
+            }
+
+            return SearchDictionaries(dictionaryIndex + 1, seedId);
+        }
+    }
+
+    [Theory]
+    [InlineData("Day5DevelopmentTesting1.txt", 46)]
+    [InlineData("Day5.txt", 2008786)] // 13286163, 2008786 too high
+    public void Day5_Part2_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
+    {
+        var seedAlmanac = ReadFile(filename).ToArray();
+        List<Map> mappingDictionaries = new();
+
+        for (var i = 1; i <= seedAlmanac.Length; i++)
+        {
+            if (!seedAlmanac[i].EndsWith(':')) continue;
+
+            List<string> lines = new();
+            i++;
+
+            while (i < seedAlmanac.Length && !string.IsNullOrEmpty(seedAlmanac[i]))
+            {
+                lines.Add(seedAlmanac[i]);
+                i++;
+            }
+
+            mappingDictionaries.Add(CreateMappings(lines));
+        }
+
+        var seeds = seedAlmanac[0].Split(' ')[1..].Select(x => long.Parse(x.Trim())).ToArray();
+        var lowestLocation = long.MaxValue;
+
+        for (long i = 0; i < seeds.Length; i += 2)
+        {
+            Console.WriteLine($"Processing seed range: {i}, {seeds[i]}");
+
+            for (var j = seeds[i]; j < seeds[i] + seeds[i + 1]; j++)
+            {
+                lowestLocation = Math.Min(lowestLocation, SearchDictionaries(0, j));
+            }
+        }
+
+        Assert.Equal(expectedAnswer, lowestLocation);
+
+        return;
+
+        long SearchDictionaries(int dictionaryIndex, long seedId)
+        {
+            if (dictionaryIndex >= mappingDictionaries.Count) return seedId;
+
+            foreach (var a in mappingDictionaries[dictionaryIndex].SoureRangeMappings)
+            {
+                if (seedId < a.Key || seedId > a.Key + a.Value - 1) continue;
 
                 var nextSeedId = mappingDictionaries[dictionaryIndex].DestinationRangeMappings[a.Key] + (seedId - a.Key);
 
