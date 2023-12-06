@@ -45,9 +45,7 @@ public class Day6
 
         for (long secondsButtonPressed = 1; secondsButtonPressed < time; secondsButtonPressed++)
         {
-            if (secondsButtonPressed * (time - secondsButtonPressed) <= distance) continue;
-            
-            result += 1;
+            if (secondsButtonPressed * (time - secondsButtonPressed) > distance) result += 1;
         }
 
         Assert.Equal(expectedAnswer, result);
