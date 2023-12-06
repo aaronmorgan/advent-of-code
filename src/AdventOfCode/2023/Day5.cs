@@ -1,21 +1,15 @@
-﻿using Xunit.Abstractions;
+﻿using AdventOfCode.Utilities;
 
 namespace AdventOfCode._2023;
 
-public class Day5 : TestBase
+public class Day5
 {
-    /// <inheritdoc />
-    public Day5(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     [Theory]
     [InlineData("Day5DevelopmentTesting1.txt", 35)]
     [InlineData("Day5.txt", 88151870)]
     public void Day5_Part1_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
     {
-        var seedAlmanac = ReadFile(filename).ToArray();
+        var seedAlmanac = FileLoader.ReadFile("2023/" + filename).ToArray();
         List<Map> mappingDictionaries = new();
 
         for (var i = 1; i <= seedAlmanac.Length; i++)
@@ -66,7 +60,7 @@ public class Day5 : TestBase
     [InlineData("Day5.txt", 2008786)] // 13286163, 2008786 too high
     public void Day5_Part2_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
     {
-        var seedAlmanac = ReadFile(filename).ToArray();
+        var seedAlmanac = FileLoader.ReadFile("2023/" + filename).ToArray();
         List<Map> mappingDictionaries = new();
 
         for (var i = 1; i <= seedAlmanac.Length; i++)
