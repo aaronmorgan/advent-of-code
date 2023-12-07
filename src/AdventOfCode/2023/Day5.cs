@@ -44,7 +44,7 @@ public class Day5
 
             foreach (var a in mappingDictionaries[dictionaryIndex].SoureRangeMappings)
             {
-                if (seedId < a.Key || seedId > a.Key + a.Value -1) continue;
+                if (seedId < a.Key || seedId > a.Key + a.Value - 1) continue;
 
                 var nextSeedId = mappingDictionaries[dictionaryIndex].DestinationRangeMappings[a.Key] + (seedId - a.Key);
 
@@ -57,7 +57,7 @@ public class Day5
 
     [Theory]
     [InlineData("Day5DevelopmentTesting1.txt", 46)]
-    [InlineData("Day5.txt", 2008786)] // 13286163, 2008786 too high
+    [InlineData("Day5.txt", 2008786)]
     public void Day5_Part2_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
     {
         var seedAlmanac = FileLoader.ReadFile("2023/" + filename).ToArray();
