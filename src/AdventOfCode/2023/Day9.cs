@@ -6,8 +6,10 @@ public class Day9
 {
     [Theory]
     [InlineData("Day9DevelopmentTesting1.txt", 114)]
+    [InlineData("Day9DevelopmentTesting1.txt", 2, true)]
     [InlineData("Day9.txt", 2101499000)]
-    public void Day9_Part1_MirageMaintenance(string filename, int expectedAnswer)
+    [InlineData("Day9.txt", 1089, true)]
+    public void Day9_Part1_MirageMaintenance(string filename, int expectedAnswer, bool dayTwo = false)
     {
         long result = 0;
         var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
@@ -22,9 +24,13 @@ public class Day9
 
             long x = 0;
 
-            for (var  historyIndex = histories.Count - 1; historyIndex >= 0; historyIndex--)
+            for (var historyIndex = histories.Count - 1; historyIndex >= 0; historyIndex--)
             {
-                x += histories[historyIndex - 1][histories[historyIndex - 1].Length - 1];
+                switch (dayTwo)
+                {
+                    case false: x += histories[historyIndex - 1][histories[historyIndex - 1].Length - 1]; break;
+                    default: x = histories[historyIndex - 1][0] - x; break;
+                }
 
                 if (historyIndex != 1) continue;
 
