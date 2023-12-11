@@ -11,7 +11,7 @@ public class Day10
     [InlineData("Day10DevelopmentTesting3.txt", 8)]
     [InlineData("Day10DevelopmentTesting4.txt", 8)]
     [InlineData("Day10.txt", 6828)]
-    public void Day10_Part1_MirageMaintenance(string filename, int expectedAnswer)
+    public void Day10_Part1_PipeMaze(string filename, int expectedAnswer)
     {
         var fileInput = FileLoader.ReadFile("2023/" + filename).ToList();
 
