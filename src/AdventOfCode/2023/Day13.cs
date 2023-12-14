@@ -6,12 +6,12 @@ public class Day13
 {
     [Theory]
     [InlineData("Day13DevelopmentTesting1.txt", 405)]
-    [InlineData("Day13.txt", 33000)] // 33000 too low.
+    [InlineData("Day13.txt", 33356)]
     public void Day13_Part1_PointOfIncidence(string filename, int expectedAnswer)
     {
         var fileInput = FileLoader.ReadFile("2023/" + filename).ToList();
 
-        int aaa = 0, overallResult = 0;
+        int rangeStartIndex = 0, overallResult = 0;
         List<string> columns;
         bool isRow;
 
@@ -21,10 +21,10 @@ public class Day13
             
             if (i == fileInput.Count || fileInput[i] == string.Empty)
             {
-                var a = fileInput.GetRange(aaa, i - aaa);
-                ProcessPattern(a);
+                var linesRange = fileInput.GetRange(rangeStartIndex, i - rangeStartIndex);
+                ProcessPattern(linesRange);
                 i++;
-                aaa = i;
+                rangeStartIndex = i;
             }
         }
 
@@ -41,7 +41,7 @@ public class Day13
             {
                 if (ExpandSearchOutwards(i, i + 1, inputPattern))
                 {
-                    result += (i + 1)  * 100;
+                    overallResult += (i + 1)  * 100;
                     isRow = true;
                     break;
                 }
@@ -64,19 +64,15 @@ public class Day13
                     columns.Add(tmpStr);
                 }
 
-                aaa = -1;
-
                 for (int i = 0; i < columns.Count - 1; i++)
                 {
                     if (ExpandSearchOutwards(i, i + 1, columns))
                     {
-                        result += i + 1;
+                        overallResult += i + 1;
                         break;
                     }
                 }
             }
-
-            overallResult += result;
         }
 
         bool ExpandSearchOutwards(int x, int y, IReadOnlyList<string> data)
