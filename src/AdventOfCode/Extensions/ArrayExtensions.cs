@@ -10,7 +10,7 @@ public static class ArrayExtensions
         using var sw = new StreamWriter(filename);
         for (var i = 0; i < array.GetLength(0); i++)
         {
-            var  line = string.Empty;
+            var line = string.Empty;
 
             for (var j = 0; j < array.GetLength(1); j++)
             {
@@ -18,6 +18,20 @@ public static class ArrayExtensions
             }
 
             sw.WriteLine(line);
+        }
+    }
+
+    /// <summary>
+    /// Uniformly pre-fills a 2d array with the specified character, or a space if not defined. 
+    /// </summary>
+    public static void Prefill(this char[,] array, char character = ' ')
+    {
+        for (var i = 0; i < array.GetLength(0); i++)
+        {
+            for (var j = 0; j < array.GetLength(1); j++)
+            {
+                array[i, j] = character;
+            }
         }
     }
 }
