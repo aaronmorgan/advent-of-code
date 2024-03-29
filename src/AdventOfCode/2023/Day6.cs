@@ -9,7 +9,7 @@ public class Day6
     [InlineData("Day6.txt", 2612736)]
     public void Day6_Part1_WaitForIt(string filename, int expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
 
         var times = Array.ConvertAll(fileInput[0][(fileInput[0].IndexOf(':') + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
         var distances = Array.ConvertAll(fileInput[1][(fileInput[1].IndexOf(':') + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
@@ -36,7 +36,7 @@ public class Day6
     [InlineData("Day6.txt", 29891250)]
     public void Day6_Part2_WaitForIt(string filename, long expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
 
         var time = int.Parse(string.Concat(fileInput[0][(fileInput[0].IndexOf(':') + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries)));
         var distance = long.Parse(string.Concat(fileInput[1][(fileInput[1].IndexOf(':') + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries)));

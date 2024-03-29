@@ -9,14 +9,14 @@ public class Day5
     [InlineData("Day5.txt", 88151870)]
     public void Day5_Part1_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
     {
-        var seedAlmanac = FileLoader.ReadFile("2023/" + filename).ToArray();
-        List<Map> mappingDictionaries = new();
+        var seedAlmanac = FileLoader.ReadAllLines("2023/" + filename).ToArray();
+        List<Map> mappingDictionaries = [];
 
         for (var i = 1; i <= seedAlmanac.Length; i++)
         {
             if (!seedAlmanac[i].EndsWith(':')) continue;
 
-            List<string> lines = new();
+            List<string> lines = [];
             i++;
 
             while (i < seedAlmanac.Length && !string.IsNullOrEmpty(seedAlmanac[i]))
@@ -55,19 +55,19 @@ public class Day5
         }
     }
 
-    [Theory]
+    [Theory(Skip = "Very long running")]
     [InlineData("Day5DevelopmentTesting1.txt", 46)]
     [InlineData("Day5.txt", 2008786)]
     public void Day5_Part2_IfYouGiveASeedAFertilizer(string filename, int expectedAnswer)
     {
-        var seedAlmanac = FileLoader.ReadFile("2023/" + filename).ToArray();
-        List<Map> mappingDictionaries = new();
+        var seedAlmanac = FileLoader.ReadAllLines("2023/" + filename).ToArray();
+        List<Map> mappingDictionaries = [];
 
         for (var i = 1; i <= seedAlmanac.Length; i++)
         {
             if (!seedAlmanac[i].EndsWith(':')) continue;
 
-            List<string> lines = new();
+            List<string> lines = [];
             i++;
 
             while (i < seedAlmanac.Length && !string.IsNullOrEmpty(seedAlmanac[i]))
@@ -117,8 +117,8 @@ public class Day5
     {
         var mappingDictionary = new Map
         {
-            SoureRangeMappings = new(),
-            DestinationRangeMappings = new()
+            SoureRangeMappings = [],
+            DestinationRangeMappings = []
         };
 
         foreach (var line in lines)

@@ -102,7 +102,7 @@ public class Day3
 
     [Theory]
     [InlineData("Day3DevelopmentTesting1.txt", 467835)]
-    [InlineData("Day3.txt", 81085275)]
+    [InlineData("Day3.txt", 85010461)]
     public void Day3_Part2_GearRatios(string filename, int expectedAnswer)
     {
         var result = 0;

@@ -9,9 +9,9 @@ public class Day11
     [InlineData("Day11.txt", 10289334)]
     public void Day11_Part1_CosmicExpansion(string filename, int expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToList();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToList();
 
-        List<int> clearSpaceRows = new(), clearSpaceColumns = new();
+        List<int> clearSpaceRows = [], clearSpaceColumns = [];
 
         for (var columnIndex = 0; columnIndex < fileInput[0].Length; columnIndex++)
         {
@@ -72,11 +72,11 @@ public class Day11
         // Calculate shortest distance between each pair.
         var result = 0;
         var hops = 0;
-        
+
         foreach (var pair in galaxyPairs)
         {
             PlotNextCursorPosition(galaxyCoordinates[pair[1]], (galaxyCoordinates[pair[0]].X, galaxyCoordinates[pair[0]].Y));
-            
+
             result += hops;
             hops = 0;
         }
@@ -88,20 +88,32 @@ public class Day11
         void PlotNextCursorPosition((int X, int Y) galaxyB, (int X, int Y) cursorPos)
         {
             hops += 1;
-            
-            if (galaxyB.Y < cursorPos.Y) { cursorPos.Y --; }
-            else if (galaxyB.X < cursorPos.X) { cursorPos.X --; }
-            else if (galaxyB.Y > cursorPos.Y) { cursorPos.Y ++; }
-            else if (galaxyB.X > cursorPos.X) { cursorPos.X ++; }
-            
+
+            if (galaxyB.Y < cursorPos.Y)
+            {
+                cursorPos.Y--;
+            }
+            else if (galaxyB.X < cursorPos.X)
+            {
+                cursorPos.X--;
+            }
+            else if (galaxyB.Y > cursorPos.Y)
+            {
+                cursorPos.Y++;
+            }
+            else if (galaxyB.X > cursorPos.X)
+            {
+                cursorPos.X++;
+            }
+
             if (cursorPos.X == galaxyB.X && cursorPos.Y == galaxyB.Y) return;
-            
-            PlotNextCursorPosition(galaxyB, cursorPos); 
+
+            PlotNextCursorPosition(galaxyB, cursorPos);
         }
 
         static IEnumerable<List<int>> GetCombinations(int[] array)
         {
-            List<List<int>> result = new();
+            List<List<int>> result = [];
             GeneratePairs(array, 0, new List<int>(), result);
             return result;
         }
@@ -110,7 +122,7 @@ public class Day11
         {
             if (currentPair.Count == 2)
             {
-                result.Add(new List<int>(currentPair));
+                result.Add([..currentPair]);
                 return;
             }
 

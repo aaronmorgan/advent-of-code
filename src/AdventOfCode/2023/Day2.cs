@@ -11,7 +11,7 @@ public class Day2
     {
         int result = 0;
 
-        foreach (var game in FileLoader.ReadFile("2023/" + filename))
+        foreach (var game in FileLoader.ReadAllLines("2023/" + filename))
         {
             var gamenumber = int.Parse(game[..game.IndexOf(':')].Split(' ')[1]);
             var hands = game[(game.IndexOf(':') + 2)..].Split(';');
@@ -64,7 +64,7 @@ public class Day2
     {
         int result = 0;
 
-        foreach (var game in FileLoader.ReadFile("2023/" + filename))
+        foreach (var game in FileLoader.ReadAllLines("2023/" + filename))
         {
             var hands = game[(game.IndexOf(':') + 2)..].Split(';');
             int redCount = 0, greenCount = 0, blueCount = 0;

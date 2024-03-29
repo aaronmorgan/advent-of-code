@@ -11,7 +11,7 @@ public class Day4
     {
         int result = 0;
 
-        foreach (var gameCard in FileLoader.ReadFile("2023/" + filename))
+        foreach (var gameCard in FileLoader.ReadAllLines("2023/" + filename))
         {
             var tmpStr = gameCard[(gameCard.IndexOf(':') + 1)..].Split('|');
 
@@ -42,7 +42,7 @@ public class Day4
     [InlineData("Day4.txt", 5921508)]
     public void Day4_Part2_Scratchcards(string filename, int expectedAnswer)
     {
-        var games = FileLoader.ReadFile("2023/" + filename).ToArray();
+        var games = FileLoader.ReadAllLines("2023/" + filename).ToArray();
         var result = games.Length;
 
         for (var i = 0; i < games.Length; i++)

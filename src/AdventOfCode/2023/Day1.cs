@@ -11,7 +11,7 @@ public class Day1
     {
         int result = 0;
 
-        foreach (var line in FileLoader.ReadFile("2023/" + filename))
+        foreach (var line in FileLoader.ReadAllLines("2023/" + filename))
         {
             if (string.IsNullOrEmpty(line)) continue;
 
@@ -42,7 +42,7 @@ public class Day1
 
         string? firstDigit, secondDigit;
 
-        foreach (var line in FileLoader.ReadFile("2023/" + filename))
+        foreach (var line in FileLoader.ReadAllLines("2023/" + filename))
         {
             if (string.IsNullOrEmpty(line)) continue;
 
