@@ -84,8 +84,6 @@ public class Day5
 
         for (long i = 0; i < seeds.Length; i += 2)
         {
-            Console.WriteLine($"Processing seed range: {i}, {seeds[i]}");
-
             for (var j = seeds[i]; j < seeds[i] + seeds[i + 1]; j++)
             {
                 lowestLocation = Math.Min(lowestLocation, SearchDictionaries(0, j));
@@ -115,11 +113,7 @@ public class Day5
 
     private static Map CreateMappings(List<string> lines)
     {
-        var mappingDictionary = new Map
-        {
-            SoureRangeMappings = [],
-            DestinationRangeMappings = []
-        };
+        var mappingDictionary = new Map([], []);
 
         foreach (var line in lines)
         {
@@ -136,9 +130,5 @@ public class Day5
         return mappingDictionary;
     }
 
-    private class Map
-    {
-        public Dictionary<long, long> SoureRangeMappings;
-        public Dictionary<long, long> DestinationRangeMappings;
-    }
+    private record Map(Dictionary<long, long> SoureRangeMappings, Dictionary<long, long> DestinationRangeMappings);
 }

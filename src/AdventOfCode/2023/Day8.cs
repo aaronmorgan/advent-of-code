@@ -1,7 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Timers;
-using AdventOfCode.Utilities;
+﻿using AdventOfCode.Utilities;
 
 namespace AdventOfCode._2023;
 
@@ -11,28 +8,22 @@ public class Day8
     [InlineData("Day8DevelopmentTesting1.txt", "AAA", 2)]
     [InlineData("Day8DevelopmentTesting2.txt", "AAA", 6)]
     [InlineData("Day8.txt", "AAA", 21797)]
-    public void Day8_Part1_CamelCards(string filename, string nodeId, int expectedAnswer)
+    public void Day8_Part1_HauntedWasteland(string filename, string nodeId, int expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
-        Dictionary<string, Tuple<string, string>> nodes = new();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
 
-        for (var i = 2; i < fileInput.Length; i++)
-        {
-            var nodeDetails = fileInput[i].Split(' ').Select(x => x.Trim('(', ')', ',')).ToArray();
+        var steps = fileInput[0].ToCharArray();
+        Dictionary<string, (string Left, string Right)> nodes = fileInput.Skip(2).ToDictionary(k => k[..3], v => (v[7..10], v[^4..^1]));
 
-            nodes.Add(nodeDetails[0], new Tuple<string, string>(nodeDetails[2], nodeDetails[3]));
-        }
-
-        var stepInstructions = fileInput[0].ToCharArray();
         var nodeIndex = 1;
         var stepIndex = 0;
 
         do
         {
             var node = nodes[nodeId];
-            var direction = stepInstructions[stepIndex];
+            var direction = steps[stepIndex];
 
-            stepIndex = stepIndex == stepInstructions.Length - 1 ? 0 : stepIndex + 1;
+            stepIndex = stepIndex == steps.Length - 1 ? 0 : stepIndex + 1;
 
             nodeId = direction switch
             {
@@ -52,83 +43,65 @@ public class Day8
 
     [Theory]
     [InlineData("Day8DevelopmentTesting3.txt", 6)]
-    [InlineData("Day8.txt", 7)]
-    public void Day8_Part2_CamelCards(string filename, int expectedAnswer)
+    [InlineData("Day8.txt", 23977527174353)]
+    public void Day8_Part2_HauntedWasteland(string filename, long expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
-        Dictionary<string, Tuple<string, string>> nodes = new();
-        List<string> startingNodes = new();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
+        var steps = fileInput[0].ToCharArray();
 
-        for (var i = 2; i < fileInput.Length; i++)
+        Dictionary<string, (string Left, string Right)> nodes = fileInput.Skip(2).ToDictionary(k => k[..3], v => (v[7..10], v[^4..^1]));
+
+        List<long> ZNumbers = new();
+
+        foreach (var node in nodes.Where(a => a.Key[2] == 'A'))
         {
-            var nodeDetails = fileInput[i].Split(' ').Select(x => x.Trim('(', ')', ',')).ToArray();
-
-            if (nodeDetails[0].EndsWith('A'))
-            {
-                startingNodes.Add(nodeDetails[0]);
-            }
-
-            nodes.Add(nodeDetails[0], new Tuple<string, string>(nodeDetails[2], nodeDetails[3]));
+            GetSteps(node.Key);
         }
 
-        var stepInstructions = fileInput[0].ToCharArray();
-        var nodeIndex = 1;
-        var stepIndex = 0;
-        ConcurrentDictionary<int, bool> withz = new();
-        object _lock = new object();
+        var result = ZNumbers.Skip(1).Aggregate(ZNumbers[0], (current, number) => lcm(current, number));
 
-var endsWithZ = false;
-
-        {
-            do
-            {
-                var direction = stepInstructions[stepIndex];
-
-         //   Parallel.ForEach(startingNodes, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(6, startingNodes.Count) }, (nodeId, state) =>
-         Parallel.For(0, startingNodes.Count, index =>
-        //        for (var index = 0; index < startingNodes.Count; index ++)
-                {
-                    var nodeId = startingNodes[index];
-                    var n = nodes[nodeId];
-
-
-                    nodeId = direction switch
-                    {
-                        'L' => n.Item1, 'R' => n.Item2, _ => throw new NotImplementedException()
-                    };
-
-                    endsWithZ = nodeId.EndsWith("Z");
-                    withz.AddOrUpdate(index, endsWithZ, (k, v) => endsWithZ);
-                    startingNodes[index] = nodeId;
-                });
-
-                stepIndex = stepIndex == stepInstructions.Length - 1 ? 0 : stepIndex + 1;
-
-                if (endsWithZ && areSame()) break;
-                nodeIndex++;
-
-                for (int i = 0; i < startingNodes.Count; i++)
-                {
-                    Console.SetCursorPosition(2, i);
-                    Console.Write(withz[i]);
-                }
-            } while (true);
-        }
-
-        Assert.Equal(expectedAnswer, nodeIndex);
+        Assert.Equal(expectedAnswer, result);
 
         return;
 
-        bool areSame()
+        void GetSteps(string node)
         {
-            //    if (withz.Count < startingNodes.Count) return false;
+            string currentNode = node;
 
-            foreach (var i in withz)
+            var found = false;
+            var currentZ = 0;
+
+            while (!found)
             {
-                if (i.Value == false) return false;
+                foreach (var c in steps)
+                {
+                    currentNode = c == 'L' ? nodes[currentNode].Item1 : nodes[currentNode].Item2;
+                    currentZ++;
+
+                    if (currentNode[2] != 'Z') continue;
+
+                    ZNumbers.Add(currentZ);
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        long gcf(long a, long b)
+        {
+            while (b != 0)
+            {
+                long temp = b;
+                b = a % b;
+                a = temp;
             }
 
-            return true;
+            return a;
+        }
+
+        long lcm(long a, long b)
+        {
+            return a / gcf(a, b) * b;
         }
     }
 }

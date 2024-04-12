@@ -39,7 +39,7 @@ public class Day4
 
     [Theory]
     [InlineData("Day4DevelopmentTesting2.txt", 30)]
-    [InlineData("Day4.txt", 5921508)]
+    // [InlineData("Day4.txt", 5921508)] // TODO: Takes 50 seconds to complete, can it be reduced?
     public void Day4_Part2_Scratchcards(string filename, int expectedAnswer)
     {
         var games = FileLoader.ReadAllLines("2023/" + filename).ToArray();

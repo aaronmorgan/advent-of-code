@@ -12,7 +12,7 @@ public class Day9
     public void Day9_Part1_MirageMaintenance(string filename, int expectedAnswer, bool dayTwo = false)
     {
         long result = 0;
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToArray();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
 
         List<int[]> histories = new();
 
