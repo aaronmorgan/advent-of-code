@@ -1,10 +1,21 @@
-﻿using System.Diagnostics;
-using AdventOfCode.Utilities;
+﻿using AdventOfCode.Utilities;
 
 namespace AdventOfCode._2023;
 
 public class Day10
 {
+    private enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
+    /// <summary>
+    /// Locate the start location of the pipe, move around the pipe until we get back to the start and divide the distance by 2.
+    /// This gives us the point 'farthest from the starting position'.
+    /// </summary>
     [Theory]
     [InlineData("Day10DevelopmentTesting1.txt", 4)]
     [InlineData("Day10DevelopmentTesting2.txt", 4)]
@@ -13,7 +24,8 @@ public class Day10
     [InlineData("Day10.txt", 6828)]
     public void Day10_Part1_PipeMaze(string filename, int expectedAnswer)
     {
-        var fileInput = FileLoader.ReadFile("2023/" + filename).ToList();
+        // Read the input data and load it into a 2d array.
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToList();
 
         var map = new char[fileInput[0].Length, fileInput.Count];
         (int X, int Y) startLocation = (0, 0);
@@ -29,137 +41,99 @@ public class Day10
             }
         }
 
-        var exitNodes = new [] { new MapLocation(), new MapLocation() };
-        
         // Determine exit nodes from the S starting point.
         var x = startLocation.X;
         var y = startLocation.Y;
-            
-        var exitNodeIndex = 0;
-            
-        if (y > 0 && map[y - 1, x] == '|') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y - 1, X = x, PrevX = x, PrevY = y, Symbol = map[y - 1, x] }; exitNodeIndex ++; map[y, x] = '|';}
-        if (map[y, x + 1] == '-') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x + 1, PrevX = x, PrevY = y, Symbol = map[y, x + 1] }; exitNodeIndex ++; map[y, x] = '-'; }
-        if (map[y + 1, x] == '|') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y + 1, X = x, PrevX = x, PrevY = y, Symbol = map[y + 1, x] }; exitNodeIndex ++; map[y, x] = '|'; }
-        if (x > 0 && map[y, x - 1] == '-') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x - 1, PrevX = x, PrevY = y, Symbol = map[y, x - 1] }; exitNodeIndex++; map[y, x] = '-'; }
-        
-        if (y > 0 && map[y - 1, x] == 'F') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y - 1, X = x, PrevX = x, PrevY = y, Symbol = map[y - 1, x] }; exitNodeIndex ++; map[y, x] = 'F'; }
-        if (y > 0 && map[y - 1, x] == '7') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y - 1, X = x, PrevX = x, PrevY = y, Symbol = map[y - 1, x] }; exitNodeIndex ++; map[y, x] = '7'; }
-        if (y + 1 < fileInput.Count && map[y + 1, x] == 'L') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y + 1, X = x, PrevX = x, PrevY = y, Symbol = map[y + 1, x] }; exitNodeIndex ++; map[y, x] = 'L'; }
-        if (y + 1 < fileInput.Count && map[y + 1, x] == 'J') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y + 1, X = x, PrevX = x, PrevY = y, Symbol = map[y + 1, x] }; exitNodeIndex ++; map[y, x] = 'J'; }
-        
-        if (x > 0 && map[y, x - 1] == 'F') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x - 1, PrevX = x, PrevY = y, Symbol = map[y, x - 1] }; map[y, x] = 'F';}
-        if (x > 0 && map[y, x - 1] == 'L') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x - 1, PrevX = x, PrevY = y, Symbol = map[y, x - 1] }; map[y, x] = 'L';}
-        if (x + 1 < fileInput[0].Length && map[y, x + 1] == '7') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x + 1, PrevX = x, PrevY = y, Symbol = map[y, x + 1] }; exitNodeIndex ++; map[y, x] = '7';}
-        if (x + 1 < fileInput[0].Length && map[y, x + 1] == 'J') { exitNodes[exitNodeIndex] = new MapLocation{ Y = y, X = x + 1, PrevX = x, PrevY = y, Symbol = map[y, x + 1] }; exitNodeIndex ++; map[y, x] = 'J';}
-            
-        var routeA = exitNodes[0];
-        var routeB = exitNodes[1];
-        
-        Dictionary<string, int> pastPositions = new();
-        
-        long routeALength = 1, maxDistance = 0;
-        
-        while(true)
+
+        // Look around the S start location and remove anything S cannot be.
+        var startTileOptions = new List<char> { '7', '|', 'J', '-', 'L', 'F' };
+
+        switch (x)
         {
-            if (routeA.Symbol == '|')
-            {
-                if (routeA.PrevY == routeA.Y - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == '-')
-            {
-                if (routeA.PrevX == routeA.X - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == '7')
-            {
-                if (routeA.PrevX == routeA.X - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == 'J')
-            {
-                if (routeA.PrevY == routeA.Y - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == 'L')
-            {
-                if (routeA.PrevY == routeA.Y - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == 'F')
-            {
-                if (routeA.PrevY == routeA.Y + 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else if (routeA.Symbol == '.')
-            {
-                if (routeA.PrevY == routeA.Y + 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else if (routeA.PrevY == routeA.Y - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.Y += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else if (routeA.PrevX == routeA.X + 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X -= 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-                else if (routeA.PrevX == routeA.X - 1) { routeA.PrevX = routeA.X; routeA.PrevY = routeA.Y; routeA.X += 1; routeA.Symbol = map[routeA.Y, routeA.X]; }
-            }
-            else Debugger.Break();
-            
-            routeALength += 1;
-            
-            if (routeALength > 13658) Assert.Fail();
-            
-            if (routeB.Symbol == '|')
-            {
-                if (routeB.PrevY == routeB.Y - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == '-')
-            {
-                if (routeB.PrevX == routeB.X - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == '7')
-            {
-                if (routeB.PrevX == routeB.X - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == 'J')
-            {
-                if (routeB.PrevY == routeB.Y - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == 'L')
-            {
-                if (routeB.PrevY == routeB.Y - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == 'F')
-            {
-                if (routeB.PrevY == routeB.Y + 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else if (routeB.Symbol == '.')
-            {
-                if (routeB.PrevY == routeB.Y + 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else if (routeB.PrevY == routeB.Y - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.Y += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else if (routeB.PrevX == routeB.X + 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X -= 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-                else if (routeB.PrevX == routeB.X - 1) { routeB.PrevX = routeB.X; routeB.PrevY = routeB.Y; routeB.X += 1; routeB.Symbol = map[routeB.Y, routeB.X]; }
-            }
-            else Debugger.Break();
-            
-            if (routeA.X == routeB.X && routeA.Y == routeB.Y)
-            {
+            case 0:
+            case > 0 when map[y, x - 1] is '.':
+                startTileOptions.RemoveAll(z => new[] { '-', 'J', '7' }.Contains(z));
                 break;
-            }
-            
-            if (routeALength > maxDistance) maxDistance = routeALength;
+            case > 0 when map[y, x - 1] is '-':
+                startTileOptions.RemoveAll(z => new[] { 'F', '|', 'L' }.Contains(z));
+                break;
+            case > 0 when map[y, x + 1] is '-':
+                startTileOptions.RemoveAll(z => new[] { 'J', '|', '7' }.Contains(z));
+                break;
+            case > 0 when map[y, x + 1] is '.': //todo merge with above
+                startTileOptions.RemoveAll(z => new[] { 'F', '|', 'L', '-' }.Contains(z));
+                break;
         }
 
-        Assert.Equal(expectedAnswer, routeALength);
-    }
+        switch (y)
+        {
+            case 0:
+            case > 0 when map[y - 1, x] is '.':
+                startTileOptions.RemoveAll(z => new[] { '|', 'L', 'J' }.Contains(z));
+                break;
+            case > 0 when map[y - 1, x] is '|':
+                startTileOptions.RemoveAll(z => new[] { 'F', '-', '7' }.Contains(z));
+                break;
+            case > 0 when map[y + 1, x] is '|':
+                startTileOptions.RemoveAll(z => new[] { 'J', '-', 'L' }.Contains(z));
+                break;
+            case > 0 when map[y + 1, x] is '.':
+                startTileOptions.RemoveAll(z => new[] { 'F', '-', '7', '|' }.Contains(z));
+                break;
+        }
 
-    private struct MapLocation
-    {
-        public int X;
-        public int Y;
-        public int PrevX;
-        public int PrevY;
-        public char Symbol;
+        // Replace the map's S with it's actual pipe symbol.
+        map[startLocation.Y, startLocation.X] = startTileOptions[0];
+
+        int x1 = startLocation.X, y1 = startLocation.Y, pipeLength = 0;
+        var fromDirection = GetInitialStartDirection(map[startLocation.Y, startLocation.X]);
+
+        do
+        {
+            (x1, y1, fromDirection) = InspectNextTile(x1, y1, fromDirection);
+
+            pipeLength++;
+
+            // The next tile is where we started, break.
+            if (x1 == startLocation.X && y1 == startLocation.Y) break;
+        } while (true);
+
+        Assert.Equal(expectedAnswer, pipeLength / 2);
+
+        return;
+
+        // Returns the starting direction assuming a clockwise progression.
+        Direction GetInitialStartDirection(char c) =>
+            c switch
+            {
+                'F' => Direction.Down,
+                '-' => Direction.Left,
+                '7' => Direction.Down,
+                '|' => Direction.Down,
+                'J' => Direction.Left,
+                'L' => Direction.Up,
+                _ => throw new InvalidOperationException()
+            };
+
+        // Returns the next x y tile location plus the direction we're coming from.
+        (int x, int y, Direction direction) InspectNextTile(int x, int y, Direction fromDirection)
+        {
+            return map[y, x] switch
+            {
+                'F' when fromDirection is Direction.Down => new(x + 1, y, Direction.Left),
+                'F' when fromDirection is Direction.Right => new(x, y + 1, Direction.Up),
+                '-' when fromDirection is Direction.Left => new(x + 1, y, Direction.Left),
+                '-' when fromDirection is Direction.Right => new(x - 1, y, Direction.Right),
+                '7' when fromDirection is Direction.Left => new(x, y + 1, Direction.Up),
+                '7' when fromDirection is Direction.Down => new(x - 1, y, Direction.Right),
+                '|' when fromDirection is Direction.Up => new(x, y + 1, Direction.Up),
+                '|' when fromDirection is Direction.Down => new(x, y - 1, Direction.Down),
+                'J' when fromDirection is Direction.Up => new(x - 1, y, Direction.Right),
+                'J' when fromDirection is Direction.Left => new(x, y - 1, Direction.Down),
+                'L' when fromDirection is Direction.Up => new(x + 1, y, Direction.Left),
+                'L' when fromDirection is Direction.Right => new(x, y - 1, Direction.Down),
+                _ => throw new InvalidOperationException()
+            };
+        }
     }
 }
