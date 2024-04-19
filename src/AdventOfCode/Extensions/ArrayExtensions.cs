@@ -3,7 +3,7 @@
 public static class ArrayExtensions
 {
     /// <summary>
-    /// Writes a 2d array to file 'line by line'.
+    /// Writes a 2d array to file 'row by row'.
     /// </summary>
     public static void WriteToFile(this char[,] array, string filename)
     {
@@ -15,6 +15,25 @@ public static class ArrayExtensions
             for (var j = 0; j < array.GetLength(1); j++)
             {
                 line += array[i, j];
+            }
+
+            sw.WriteLine(line);
+        }
+    }
+    
+    /// <summary>
+    /// Writes a jagged 2d array to file 'row by row'.
+    /// </summary>
+    public static void WriteToFile(this char[][] jaggedArray, string filename)
+    {
+        using var sw = new StreamWriter(filename);
+        foreach (var row in jaggedArray)
+        {
+            var line = string.Empty;
+
+            foreach (var col in row)
+            {
+                line += col;
             }
 
             sw.WriteLine(line);

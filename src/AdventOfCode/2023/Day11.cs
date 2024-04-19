@@ -4,12 +4,22 @@ namespace AdventOfCode._2023;
 
 public class Day11
 {
+    /// <summary>
+    /// Part 1 & 2: Can be done together if we pass in an 'empty space multiplier', Simply allow for this when calculating the shortest distance using
+    /// the Manhattan distance algorithm. The empty space multipler means we avoid plotting the full size of the galaxy.
+    /// </summary>
     [Theory]
-    [InlineData("Day11DevelopmentTesting1.txt", 374)]
-    [InlineData("Day11.txt", 10289334)]
-    public void Day11_Part1_CosmicExpansion(string filename, int expectedAnswer)
+    [InlineData("Day11DevelopmentTesting1.txt", 2, 374)]
+    [InlineData("Day11DevelopmentTesting1.txt", 10, 1030)]
+    [InlineData("Day11DevelopmentTesting1.txt", 100, 8410)]
+    [InlineData("Day11.txt", 2, 10289334)] // Part 1
+    [InlineData("Day11.txt", 1000000, 649862989626)] // Part 2
+    public void Day11_Part1And2_CosmicExpansion(string filename, int distanceMultiplier, long expectedAnswer)
     {
-        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToList();
+        var fileInput = FileLoader.ReadAllLines("2023/" + filename).ToArray();
+
+        // Using a jagged array because it's easier to do the replacement of markers for 'empty' rows and columns.
+        char[][] arr = new char[fileInput.Length][];
 
         List<int> clearSpaceRows = [], clearSpaceColumns = [];
 
@@ -18,48 +28,57 @@ public class Day11
             clearSpaceColumns.Add(columnIndex);
         }
 
-        // Calculate rows and columns with no galaxies present.
-        for (var rowIndex = 0; rowIndex < fileInput.Count; rowIndex++)
+        // Convert the input file into a 2D char array and determine rows and columns with no galaxies present.
+        for (var row = 0; row < arr.Length; row++)
         {
-            var row = fileInput[rowIndex].ToCharArray();
-            bool rowIsClearSpace = true;
+            var rowIsClearSpace = true;
 
-            for (int i = 0; i < row.Length; i++)
+            arr[row] = new char[fileInput[row].Length];
+
+            for (var col = 0; col < fileInput[row].Length; col++)
             {
-                if (row[i] == '.') continue;
+                arr[row][col] = fileInput[row][col];
+
+                if (fileInput[row][col] == '.') continue;
 
                 rowIsClearSpace = false;
-                clearSpaceColumns.Remove(i);
+                clearSpaceColumns.Remove(col);
             }
 
-            if (rowIsClearSpace) clearSpaceRows.Add(rowIndex);
+            if (rowIsClearSpace) clearSpaceRows.Add(row);
         }
 
-        // Expand clear space rows and columns (in reverse).
-        for (int i = clearSpaceRows.Count - 1; i >= 0; i--)
+        // Replace all empty rows with fiducial markers.
+        var emptyRowMarkers = new char[arr.GetLength(0)];
+        Array.Fill(emptyRowMarkers, '+');
+
+        foreach (var y in clearSpaceRows)
         {
-            fileInput.Insert(clearSpaceRows[i], new string('.', fileInput[clearSpaceRows[i]].Length));
+            arr[y] = emptyRowMarkers;
         }
 
-        for (int i = clearSpaceColumns.Count - 1; i >= 0; i--)
+        // Replace all empty columns with fiducial markers.
+        foreach (var x in clearSpaceColumns)
         {
-            for (var index = 0; index < fileInput.Count; index++)
+            foreach (var row in arr)
             {
-                fileInput[index] = fileInput[index].Insert(clearSpaceColumns[i], ".");
+                row[x] = '+';
             }
         }
+
+        //   arr.WriteToFile("C:/temp/day11.txt");
 
         // Plot galaxy locations.
-        int galaxyIndex = 1;
+        var galaxyIndex = 1;
         var galaxyCoordinates = new Dictionary<int, (int X, int Y)>();
 
-        for (var rowIndex = 0; rowIndex < fileInput.Count; rowIndex++)
+        for (var rowIndex = 0; rowIndex < arr.Length; rowIndex++)
         {
-            var row = fileInput[rowIndex].ToCharArray();
+            var row = arr[rowIndex];
 
-            for (int i = 0; i < row.Length; i++)
+            for (var i = 0; i < row.Length; i++)
             {
-                if (row[i] == '.') continue;
+                if (row[i] is '.' or '+') continue;
 
                 galaxyCoordinates.Add(galaxyIndex, (X: i, Y: rowIndex));
                 galaxyIndex++;
@@ -70,45 +89,44 @@ public class Day11
         var galaxyPairs = GetCombinations(galaxyCoordinates.Keys.ToArray());
 
         // Calculate shortest distance between each pair.
-        var result = 0;
-        var hops = 0;
+        long result = 0;
 
         foreach (var pair in galaxyPairs)
         {
-            PlotNextCursorPosition(galaxyCoordinates[pair[1]], (galaxyCoordinates[pair[0]].X, galaxyCoordinates[pair[0]].Y));
-
-            result += hops;
-            hops = 0;
+            result += PlotNextCursorPosition(galaxyCoordinates[pair[1]],
+                (galaxyCoordinates[pair[0]].X, galaxyCoordinates[pair[0]].Y));
         }
 
         Assert.Equal(expectedAnswer, result);
 
         return;
 
-        void PlotNextCursorPosition((int X, int Y) galaxyB, (int X, int Y) cursorPos)
+        int PlotNextCursorPosition((int X, int Y) galaxyB, (int X, int Y) cursorPos)
         {
-            hops += 1;
+            var distance = 0;
+            while (true)
+            {
+                distance += arr[cursorPos.Y][cursorPos.X] == '+' ? distanceMultiplier : 1;
 
-            if (galaxyB.Y < cursorPos.Y)
-            {
-                cursorPos.Y--;
-            }
-            else if (galaxyB.X < cursorPos.X)
-            {
-                cursorPos.X--;
-            }
-            else if (galaxyB.Y > cursorPos.Y)
-            {
-                cursorPos.Y++;
-            }
-            else if (galaxyB.X > cursorPos.X)
-            {
-                cursorPos.X++;
-            }
+                if (galaxyB.Y < cursorPos.Y)
+                {
+                    cursorPos.Y--;
+                }
+                else if (galaxyB.X < cursorPos.X)
+                {
+                    cursorPos.X--;
+                }
+                else if (galaxyB.Y > cursorPos.Y)
+                {
+                    cursorPos.Y++;
+                }
+                else if (galaxyB.X > cursorPos.X)
+                {
+                    cursorPos.X++;
+                }
 
-            if (cursorPos.X == galaxyB.X && cursorPos.Y == galaxyB.Y) return;
-
-            PlotNextCursorPosition(galaxyB, cursorPos);
+                if (cursorPos.X == galaxyB.X && cursorPos.Y == galaxyB.Y) return distance;
+            }
         }
 
         static IEnumerable<List<int>> GetCombinations(int[] array)
@@ -118,7 +136,8 @@ public class Day11
             return result;
         }
 
-        static void GeneratePairs(IReadOnlyList<int> array, int index, IList<int> currentPair, ICollection<List<int>> result)
+        static void GeneratePairs(IReadOnlyList<int> array, int index, IList<int> currentPair,
+            ICollection<List<int>> result)
         {
             if (currentPair.Count == 2)
             {
@@ -126,7 +145,7 @@ public class Day11
                 return;
             }
 
-            for (int i = index; i < array.Count; i++)
+            for (var i = index; i < array.Count; i++)
             {
                 currentPair.Add(array[i]);
                 GeneratePairs(array, i + 1, currentPair, result);
