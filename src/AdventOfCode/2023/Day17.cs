@@ -5,12 +5,16 @@ namespace AdventOfCode._2023;
 public class Day17
 {
     /// <summary>
-    /// 
+    /// Part 1 & 2: Ideally we should use Dijkstra's algorithm to find the 'least expensive' path on the weighted nodes. However this is more BFS
+    /// but because we put it into a <see cref="PriorityQueue{TElement,TPriority}"/> and always dequeue the node with the least amount of heatloss
+    /// we eventually get to the target node and implicitly the first time we see that node it's also incurred the lowest cost to get there. 
     /// </summary>
     [Theory]
-    [InlineData("Day17DevelopmentTesting1.txt", 3, 102)]
-    [InlineData("Day17.txt", 3, 928)]
-    public void Day17_Part1_ClumsyCrucible(string filename, int maxConsecutiveMoves, int expectedAnswer)
+    [InlineData("Day17DevelopmentTesting1.txt", 0, 3, 102)]
+    [InlineData("Day17DevelopmentTesting1.txt", 4, 10, 94)]
+    [InlineData("Day17.txt", 0, 3, 928)]
+    [InlineData("Day17.txt", 4, 10, 1104)]
+    public void Day17_Part1_ClumsyCrucible(string filename, int minConsecutiveMoves, int maxConsecutiveMoves, int expectedAnswer)
     {
         var input = FileLoader.ReadAllLines("2023/" + filename).ToArray();
 
@@ -68,6 +72,8 @@ public class Day17
                             current.Position with { Y = current.Position.Y - 1 }, Direction.Down,
                             current.ContinuousStepsInDirection + 1), priority: heatLoss);
                     }
+                    
+                    if (current.ContinuousStepsInDirection < minConsecutiveMoves) break;
 
                     // Turn right
                     if (current.Position.X < gridWidth)
@@ -99,6 +105,8 @@ public class Day17
                             current.Position with { X = current.Position.X - 1 }, Direction.Right,
                             current.ContinuousStepsInDirection + 1), priority: heatLoss);
                     }
+                    
+                    if (current.ContinuousStepsInDirection < minConsecutiveMoves) break;
 
                     // Turn right
                     if (current.Position.Y > 0)
@@ -131,6 +139,8 @@ public class Day17
                             current.Position with { X = current.Position.X + 1 }, Direction.Left,
                             current.ContinuousStepsInDirection + 1), priority: heatLoss);
                     }
+                    
+                    if (current.ContinuousStepsInDirection < minConsecutiveMoves) break;
 
                     // Turn right
                     if (current.Position.Y < gridHeight)
@@ -162,6 +172,8 @@ public class Day17
                             current.Position with { Y = current.Position.Y + 1 }, Direction.Up,
                             current.ContinuousStepsInDirection + 1), priority: heatLoss);
                     }
+                    
+                    if (current.ContinuousStepsInDirection < minConsecutiveMoves) break;
 
                     // Turn right
                     if (current.Position.X > 0)
