@@ -1,4 +1,5 @@
-﻿using AdventOfCode.Utilities;
+﻿using AdventOfCode.Types;
+using AdventOfCode.Utilities;
 
 namespace AdventOfCode._2023;
 
@@ -12,12 +13,14 @@ public class Day23
     /// can net us the longest path, see 'Longest path on DAG' https://www.youtube.com/watch?v=TXkDpqjDMHA.
     /// </summary>
     [Theory]
-    [InlineData("Day23DevelopmentTesting1.txt", 9, 94)]
-    [InlineData("Day23.txt", 36, 2106)]
-    public void Day23_Part1_ALongWalk(string filename, int expectedVertices, int expectedAnswer)
+    [InlineData("Day23DevelopmentTesting1.txt", 9, 94, Part.One)]
+    [InlineData("Day23.txt", 36, 2106, Part.One)]
+    [InlineData("Day23DevelopmentTesting1.txt", 9, 154, Part.Two)]
+    [InlineData("Day23.txt", 36, 6350, Part.Two)]
+    public void Day23_Part1_ALongWalk(string filename, int expectedVertices, int expectedAnswer, Part problemPart)
     {
         var input = FileLoader.ReadAllLines("2023/" + filename).ToArray();
-        char[,] arr = new char[input.Length, input[0].Length];
+        char[,] grid = new char[input.Length, input[0].Length];
 
         // Convert the input file into a 2D char array.
         for (var row = 0; row < input.Length; row++)
@@ -26,22 +29,22 @@ public class Day23
 
             for (var col = 0; col < line.Length; col++)
             {
-                arr[row, col] = line[col];
+                grid[row, col] = line[col];
             }
         }
 
-        GridPoint startPoint = new(input[0].IndexOf('.'), 0);
-        GridPoint endPoint = new(input[^1].IndexOf('.'), input.Length - 1);
+        (int Row, int Col) startPoint = (0, input[0].IndexOf('.'));
+        (int Row, int Col) endPoint = (input.Length - 1, input[^1].IndexOf('.'));
 
-        List<GridPoint> points = [startPoint, endPoint];
+        List<(int Row, int Col)> points = [startPoint, endPoint];
 
         // Iterate over the grid and identify all points that have at least 3 neighbours. These 
         // are the vertices of our graph, having removed the other unnecessary noise.
-        for (var row = 0; row < arr.GetLength(0); row++)
+        for (var row = 0; row < grid.GetLength(0); row++)
         {
-            for (var col = 0; col < arr.GetLength(1); col++)
+            for (var col = 0; col < grid.GetLength(1); col++)
             {
-                if (arr[row, col] == '#') continue;
+                if (grid[row, col] == '#') continue;
 
                 int neighbours = 0;
 
@@ -54,9 +57,9 @@ public class Day23
                          })
                 {
                     // Skip this point if we're out of bounds or in the 'forest'.
-                    if (nr >= 0 && nr < arr.GetLength(0) &&
-                        nc >= 0 && nc < arr.GetLength(1) &&
-                        arr[nr, nc] != '#')
+                    if (nr >= 0 && nr < grid.GetLength(0) &&
+                        nc >= 0 && nc < grid.GetLength(1) &&
+                        grid[nr, nc] != '#')
                     {
                         neighbours += 1;
                     }
@@ -65,10 +68,9 @@ public class Day23
                     // We later use this list of points to recreate the graph using only those points.
                     if (neighbours >= 3)
                     {
-                        var gridPoint = new GridPoint(col, row);
-                        if (!points.Contains(gridPoint))
+                        if (!points.Contains((row, col)))
                         {
-                            points.Add(gridPoint);
+                            points.Add((row, col));
                         }
                     }
                 }
@@ -83,7 +85,7 @@ public class Day23
 
         foreach (var pt in points)
         {
-            graph[(pt.Y, pt.X)] = new Dictionary<(int Row, int Col), int>();
+            graph[(pt.Row, pt.Col)] = new Dictionary<(int Row, int Col), int>();
         }
 
         var directions = new Dictionary<char, List<(int Row, int Col)>>
@@ -95,7 +97,7 @@ public class Day23
             { '.', [(-1, 0), (1, 0), (0, -1), (0, 1)] }
         };
 
-        foreach (var (sc, sr) in points)
+        foreach (var (sr, sc) in points)
         {
             // Use a stack, we're going to perform a DFS,
             var stack = new Stack<(int seenCount, int seenRow, int seenCol)>();
@@ -109,51 +111,88 @@ public class Day23
 
                 // If not the starting position, n=0, and our starting row (sr) and starting column (sc) have
                 // a connection to the new row/col we've found, add it to the collection of graph vertices.
-                if (n != 0 && points.Any(p => p.Y == r && p.X == c))
+                if (n != 0 && points.Any(p => p.Row == r && p.Col == c))
                 {
                     graph[(sr, sc)][(r, c)] = n;
                     continue;
                 }
 
-                foreach (var (dr, dc) in directions[arr[r, c]])
+                if (problemPart == Part.One)
                 {
-                    var nr = r + dr;
-                    var nc = c + dc;
-
-                    if (nr >= 0 && nr < arr.GetLength(0) &&
-                        nc >= 0 && nc < arr.GetLength(1) &&
-                        arr[nr, nc] != '#' &&
-                        !seen.Contains((nr, nc)))
+                    foreach (var (dr, dc) in directions[grid[r, c]])
                     {
-                        // Push the new row/col to the stack, incrementing the counter by 1.
-                        stack.Push((n + 1, nr, nc));
+                        var nr = r + dr;
+                        var nc = c + dc;
 
-                        seen.Add((nr, nc));
+                        if (nr >= 0 && nr < grid.GetLength(0) &&
+                            nc >= 0 && nc < grid.GetLength(1) &&
+                            grid[nr, nc] != '#' &&
+                            !seen.Contains((nr, nc)))
+                        {
+                            // Push the new row/col to the stack, incrementing the counter by 1.
+                            stack.Push((n + 1, nr, nc));
+
+                            seen.Add((nr, nc));
+                        }
+                    }
+                }
+                // For part 2 we treat all tiles as . and ignore slopes. This means we don't need the
+                // 'directions' collection from part 1.
+                else if (problemPart == Part.Two)
+                {
+                    foreach (var (dr, dc) in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
+                    {
+                        var nr = r + dr;
+                        var nc = c + dc;
+
+                        if (nr >= 0 && nr < grid.GetLength(0) &&
+                            nc >= 0 && nc < grid.GetLength(1) &&
+                            grid[nr, nc] != '#' &&
+                            !seen.Contains((nr, nc)))
+                        {
+                            // Push the new row/col to the stack, incrementing the counter by 1.
+                            stack.Push((n + 1, nr, nc));
+
+                            seen.Add((nr, nc));
+                        }
                     }
                 }
             }
         }
 
-        var result = GetDfsMaxPointDistance((startPoint.Y, startPoint.X));
+        HashSet<(int y, int x)> dfsProcessedPoints = [];
+        var result = GetDfsMaxPointDistance(startPoint);
 
         Assert.Equal(expectedAnswer, result);
         return;
-        
+
         // Modified DFS search function. 
         // We iterate over all the adjacent points for each node in the graph collection and
-        // determine the furthest away.
+        // recursively look at each of it's adjacent nodes to determine the furthest distance.
         int GetDfsMaxPointDistance((int y, int x) point)
         {
-            int max = 0;
+            if (point == endPoint) return 0;
+
+            int max = int.MinValue;
+
+            // This is really only required for Part 2 as Part 1 doesn't have any cycles and so doesn't
+            // loop back over already seen points. The removal of slopes changes this behaviour.
+            dfsProcessedPoints.Add(point);
 
             foreach (KeyValuePair<(int y, int x), int> nx in graph[(point.y, point.x)])
             {
-                max = Math.Max(max, GetDfsMaxPointDistance((nx.Key.y, nx.Key.x)) + graph[(point.y, point.x)][(nx.Key.y, nx.Key.x)]);
+                // Ensure we haven't seen this point before, to avoid crossing the same path over and over.
+                if (dfsProcessedPoints.Contains(nx.Key)) continue;
+
+                // Add the nx.Key distance to the result of recursively calling GetDfsMaxPointDistance and test against 'max'
+                // for the furthest distance.
+                max = Math.Max(max,
+                    GetDfsMaxPointDistance(nx.Key) + graph[(point.y, point.x)][(nx.Key.y, nx.Key.x)]);
             }
+
+            dfsProcessedPoints.Remove(point);
 
             return max;
         }
     }
-
-    private record GridPoint(int X, int Y);
 }
