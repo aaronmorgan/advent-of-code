@@ -3,7 +3,7 @@
 public static class ShoelaceFormula
 {
     public record Point(double X, double Y);
-
+    
     /// <summary>
     /// Calculate polygon area using shoelace formula.
     /// </summary>
