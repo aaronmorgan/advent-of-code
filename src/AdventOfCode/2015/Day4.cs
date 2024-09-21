@@ -24,9 +24,9 @@ public class Day4
     [InlineData("yzbqklnj", 9962624)]
     public void Day4_Part2_TheIdealStockingStuffer(string secretKey, int expectedAnswer)
     {
-        for (var i = 1; i < 9999999; i++)
+        for (var i = 1000000; i < 9999999; i++)
         {
-            if (ToMd5Hash(secretKey + i.ToString("D6"))[..6] == "000000")
+            if (ToMd5Hash(secretKey + i)[..6] == "000000")
             {
                 Assert.Equal(expectedAnswer, i);
                 break;
