@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using AdventOfCode.Utilities;
+﻿using AdventOfCode.Utilities;
 
 namespace AdventOfCode._2015;
 
@@ -88,6 +86,84 @@ public class Day5
                 if (c == a) return true;
 
                 a = c;
+            }
+
+            return false;
+        }
+    }
+
+    [Theory]
+    [InlineData("qjhvhtzxzqqjkmpb", 1)]
+    [InlineData("xxyxx", 1)]
+    [InlineData("uurcxstgmygtbstg", 0)]
+    [InlineData("ieodomkazucvgmuy", 0)]
+    [InlineData("Day5.txt", 55)]
+    public void Day5_Part2_DoesntHeHaveInternElvesForThis(string filename, int expectedAnswer)
+    {
+        var input = filename.StartsWith("Day5")
+            ? FileLoader.ReadAllLines("2015/" + filename).ToArray()
+            : [filename];
+
+        var naughtyStrings = 0;
+
+        foreach (var line in input)
+        {
+            if (!ContainsPairsOfStrings(line))
+            {
+                naughtyStrings += 1;
+                continue;
+            }
+
+            if (!CheckForDoubleChars(line))
+            {
+                naughtyStrings += 1;
+            }
+        }
+
+        Assert.Equal(expectedAnswer, input.Length - naughtyStrings);
+
+        return;
+
+        // A 'nice' string contains a pair of any two letters that appears at least twice in the string
+        // without overlapping, like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).
+        bool ContainsPairsOfStrings(string str)
+        {
+            List<string> stringPairs = [];
+
+            // Build a list of string pairs.
+            for (var index = 0; index < str.Length; index++)
+            {
+                if (index == str.Length - 1) continue;
+
+                var chars = new[] { str[index], str[index + 1] };
+                var stringPair = new string(chars);
+
+                if (stringPairs.Contains(stringPair) && stringPairs.IndexOf(stringPair) < index - 1)
+                {
+                    return true;
+                }
+
+                stringPairs.Add(stringPair);
+            }
+
+            return false;
+        }
+
+        // True if the string contains at least one letter which repeats with exactly one letter between
+        // them, like xyx, abcdefeghi (efe), or even aaa.
+        bool CheckForDoubleChars(string str)
+        {
+            char a = str[0];
+            char b = str[1];
+
+            for (var index = 2; index < str.Length; index++)
+            {
+                var c = str[index];
+
+                if (c == a) return true;
+
+                a = b;
+                b = c;
             }
 
             return false;
